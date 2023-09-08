@@ -15,7 +15,7 @@ To integrate ViewBindingDelegate into your project, follow these steps:
 2. Add the following dependency to your dependencies block:
 ```gradle
 dependencies {
-    implementation 'io.github.cooliceman:viewbindingdelegate:<latest_version>'
+    implementation 'io.github.cooliceman:view-binding-delegate:<latest_version>'
 }
 ```
 Replace <latest_version> with the latest version of the library, which you can find in the releases section.
@@ -103,7 +103,37 @@ class MyViewHolder(private val binding: RecyclerViewItemBinding) : RecyclerView.
 }
 ```
 
+## Attention
+If you use view binding in your fragment, when you want to access the view binding object in post functions or animation end listeners, 
+you should check whether the fragment is still attached to the activity, otherwise you will get exception.
 
+```kotlin
+class MyFragment : Fragment(R.layout.fragment_my) {
+    private val binding by viewBinding(FragmentMyBinding::bind)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_my, container, false)
+    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // Access views through binding instance
+        binding.textView.text = "Hello from Fragment!"
+        
+        // If you want to access the view binding object in post functions or animation end listeners, 
+        // you should check whether the fragment is still attached to the activity, otherwise you will get a exception.
+        binding.textView.post {
+            if (!isAdded) {
+                return@post
+            }
+            binding.textView.text = "Hello from post!"
+        }
+    }
+}
+```
 ## License
 This library is distributed under the Apache License, Version 2.0. See LICENSE for more information.
 
